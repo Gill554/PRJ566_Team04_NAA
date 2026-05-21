@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:prj_smart_style/app/app.dart';
+import 'package:prj_smart_style/app/providers/app_providers.dart';
+import 'package:prj_smart_style/shared/firebase/firebase_initializer.dart';
 
-void main() {
-  runApp(const MainApp());
-}
+import 'package:provider/provider.dart';
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('Hello World!'),
-        ),
-      ),
-    );
-  }
+  await FirebaseInitializer.initialize();
+  runApp(
+    MultiProvider(
+      providers: AppProviders.providers,
+      child: const SmartStyleApp(),
+    ),
+  );
 }
