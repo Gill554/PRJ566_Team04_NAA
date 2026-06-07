@@ -6,8 +6,12 @@ import 'package:prj_smart_style/app/theme/app_radius.dart';
 import 'package:prj_smart_style/app/theme/app_spacing.dart';
 import 'package:prj_smart_style/app/theme/app_text_styles.dart';
 import 'package:prj_smart_style/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:prj_smart_style/shared/widgets/clothing_image_box.dart';
+import 'package:prj_smart_style/features/preferences/presentation/controllers/preferences_controller.dart';
+import 'package:prj_smart_style/features/wardrobe/domain/constants/wardrobe_categories.dart';
+import 'package:prj_smart_style/features/wardrobe/presentation/controllers/wardrobe_controller.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   static const int profileCount = 1;
@@ -18,11 +22,31 @@ class HomeScreen extends StatelessWidget {
 
   static const bool hasSavedLooks = false;
 
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
   bool get isReady {
-    return profileCount > 0 &&
-        topsCount > 0 &&
-        bottomsCount > 0 &&
-        footwearCount > 0;
+    return HomeScreen.profileCount > 0 &&
+        HomeScreen.topsCount > 0 &&
+        HomeScreen.bottomsCount > 0 &&
+        HomeScreen.footwearCount > 0;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userId = context.read<AuthController>().currentUser?.id;
+
+      if (userId == null) return;
+
+      // context.read<FavoritesController>().loadFavorites(userId);
+      context.read<PreferencesController>().loadProfiles(userId);
+      context.read<WardrobeController>().loadWardrobe(userId: userId);
+    });
   }
 
   @override
@@ -35,26 +59,21 @@ class HomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const _UserProfile(),
-
               const SizedBox(height: AppSpacing.xl),
-
               _NewOutfit(
                 isReady: isReady,
-                profileCount: profileCount,
-                totalItems: totalItems,
-                topsCount: topsCount,
-                bottomsCount: bottomsCount,
-                footwearCount: footwearCount,
+                profileCount: HomeScreen.profileCount,
+                totalItems: HomeScreen.totalItems,
+                topsCount: HomeScreen.topsCount,
+                bottomsCount: HomeScreen.bottomsCount,
+                footwearCount: HomeScreen.footwearCount,
               ),
-
               const SizedBox(height: AppSpacing.xl),
-
-              const _FavoriteOutfitsSection(hasSavedLooks: hasSavedLooks),
-
+              const _FavoriteOutfitsSection(
+                hasSavedLooks: HomeScreen.hasSavedLooks,
+              ),
               const SizedBox(height: AppSpacing.xl),
-
               const _ProfileShortcutSection(),
-
               const SizedBox(height: AppSpacing.xl),
             ],
           ),
