@@ -4,3 +4,8 @@ export 'package:prj_smart_style/features/auth/presentation/screens/registration_
 export 'package:prj_smart_style/features/home/presentation/screens/home_screen.dart';
 export 'package:prj_smart_style/features/profile/presentation/screens/profile_screen.dart';
 export 'package:prj_smart_style/features/profile/presentation/screens/edit_profile_screen.dart';
+export 'package:prj_smart_style/features/preferences/presentation/screens/preferences_screen.dart';
+export 'package:prj_smart_style/features/preferences/presentation/screens/edit_preferences_screen.dart';
+export 'package:prj_smart_style/features/wardrobe/presentation/screens/wardrobe_screen.dart';
+export 'package:prj_smart_style/features/wardrobe/presentation/screens/clothing_detail_screen.dart';
+export 'package:prj_smart_style/features/wardrobe/presentation/screens/upload_clothing_screen.dart';
