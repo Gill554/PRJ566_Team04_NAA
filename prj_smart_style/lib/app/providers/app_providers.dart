@@ -27,11 +27,10 @@ import '../../features/preferences/domain/usecases/update_user_preference_profil
 import '../../features/preferences/presentation/controllers/preferences_controller.dart';
 
 /// WARDROBE
-// import '../../shared/ai/data/services/gemini_service.dart';
-import '../../features/wardrobe/data/repositories/mock_clothing_analysis_repository.dart';
+import '../../shared/ai/data/services/gemini_service.dart';
 import '../../features/wardrobe/data/datasources/wardrobe_local_datasource.dart';
 import '../../features/wardrobe/data/repositories/sqlite_wardrobe_repository.dart';
-//import '../../features/wardrobe/data/repositories/gemini_clothing_analysis_repository.dart';
+import '../../features/wardrobe/data/repositories/gemini_clothing_analysis_repository.dart';
 import '../../features/wardrobe/domain/usecases/add_clothing_item_usecase.dart';
 import '../../features/wardrobe/domain/usecases/analyze_and_add_clothing_item_usecase.dart';
 import '../../features/wardrobe/domain/usecases/delete_clothing_item_usecase.dart';
@@ -53,6 +52,9 @@ class AppProviders {
   static final DatabaseService databaseService = DatabaseService(
     appDatabase: appDatabase,
   );
+
+  /// GEMINI
+  static final geminiService = GeminiService();
 
   /// AUTH
   static final authRepository = FirebaseAuthRepository(
@@ -77,11 +79,9 @@ class AppProviders {
     localDatasource: wardrobeLocalDatasource,
   );
 
-  // static final clothingAnalysisRepository = GeminiClothingAnalysisRepository(
-  //   geminiService: geminiService,
-  // );
-
-  static final clothingAnalysisRepository = MockClothingAnalysisRepository();
+  static final clothingAnalysisRepository = GeminiClothingAnalysisRepository(
+    geminiService: geminiService,
+  );
 
   /// CAMERA
   static final imagePickerRepository = ImagePickerRepositoryImpl(
