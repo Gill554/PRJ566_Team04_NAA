@@ -15,5 +15,9 @@ class Routes {
     'wardrobe': (BuildContext context) => const WardrobeScreen(),
     'clothing_detail': (BuildContext context) => const ClothingDetailScreen(),
     'upload_clothing': (BuildContext context) => const UploadClothingScreen(),
+    'outfit_request': (BuildContext context) => const OutfitRequestScreen(),
+    'outfit_result': (BuildContext context) => const OutfitResultScreen(),
+    'favorites': (BuildContext context) => const FavoritesScreen(),
+    'favorite_detail': (BuildContext context) => const FavoriteDetailScreen(),
   };
 }

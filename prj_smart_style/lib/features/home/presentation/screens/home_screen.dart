@@ -6,6 +6,8 @@ import 'package:prj_smart_style/app/theme/app_radius.dart';
 import 'package:prj_smart_style/app/theme/app_spacing.dart';
 import 'package:prj_smart_style/app/theme/app_text_styles.dart';
 import 'package:prj_smart_style/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:prj_smart_style/features/favorites/domain/entities/favorite_outfit_entity.dart';
+import 'package:prj_smart_style/features/favorites/presentation/controllers/favorites_controller.dart';
 import 'package:prj_smart_style/shared/widgets/clothing_image_box.dart';
 import 'package:prj_smart_style/features/preferences/presentation/controllers/preferences_controller.dart';
 import 'package:prj_smart_style/features/wardrobe/domain/constants/wardrobe_categories.dart';
@@ -14,26 +16,11 @@ import 'package:prj_smart_style/features/wardrobe/presentation/controllers/wardr
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  static const int profileCount = 1;
-  static const int totalItems = 12;
-  static const int topsCount = 4;
-  static const int bottomsCount = 4;
-  static const int footwearCount = 4;
-
-  static const bool hasSavedLooks = false;
-
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  bool get isReady {
-    return HomeScreen.profileCount > 0 &&
-        HomeScreen.topsCount > 0 &&
-        HomeScreen.bottomsCount > 0 &&
-        HomeScreen.footwearCount > 0;
-  }
-
   @override
   void initState() {
     super.initState();
@@ -43,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       if (userId == null) return;
 
-      // context.read<FavoritesController>().loadFavorites(userId);
+      context.read<FavoritesController>().loadFavorites(userId);
       context.read<PreferencesController>().loadProfiles(userId);
       context.read<WardrobeController>().loadWardrobe(userId: userId);
     });
@@ -60,18 +47,9 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               const _UserProfile(),
               const SizedBox(height: AppSpacing.xl),
-              _NewOutfit(
-                isReady: isReady,
-                profileCount: HomeScreen.profileCount,
-                totalItems: HomeScreen.totalItems,
-                topsCount: HomeScreen.topsCount,
-                bottomsCount: HomeScreen.bottomsCount,
-                footwearCount: HomeScreen.footwearCount,
-              ),
+              const _NewOutfit(),
               const SizedBox(height: AppSpacing.xl),
-              const _FavoriteOutfitsSection(
-                hasSavedLooks: HomeScreen.hasSavedLooks,
-              ),
+              const _FavoriteOutfitsSection(),
               const SizedBox(height: AppSpacing.xl),
               const _ProfileShortcutSection(),
               const SizedBox(height: AppSpacing.xl),
@@ -98,12 +76,9 @@ class _UserProfile extends StatelessWidget {
         children: [
           const CircleAvatar(radius: AppRadius.lg, child: Icon(Icons.person)),
           const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text(
-              "Hello, ${authController.currentUser?.fullName ?? "Unknown User"}!",
-              style: AppTextStyles.title,
-              overflow: TextOverflow.ellipsis,
-            ),
+          Text(
+            "Hello, ${authController.currentUser?.fullName ?? "Unknown User"}!",
+            style: AppTextStyles.title,
           ),
         ],
       ),
@@ -112,24 +87,43 @@ class _UserProfile extends StatelessWidget {
 }
 
 class _NewOutfit extends StatelessWidget {
-  final bool isReady;
-  final int profileCount;
-  final int totalItems;
-  final int topsCount;
-  final int bottomsCount;
-  final int footwearCount;
-
-  const _NewOutfit({
-    required this.isReady,
-    required this.profileCount,
-    required this.totalItems,
-    required this.topsCount,
-    required this.bottomsCount,
-    required this.footwearCount,
-  });
+  const _NewOutfit();
 
   @override
   Widget build(BuildContext context) {
+    final preferencesController = context.watch<PreferencesController>();
+    final wardrobeController = context.watch<WardrobeController>();
+
+    final profileCount = preferencesController.profiles.length;
+
+    final topsCount = wardrobeController
+        .getItemsByCategory(WardrobeCategories.tops.id)
+        .where((item) => item.isImageAvailable)
+        .length;
+
+    final bottomsCount = wardrobeController
+        .getItemsByCategory(WardrobeCategories.bottoms.id)
+        .where((item) => item.isImageAvailable)
+        .length;
+
+    final footwearCount = wardrobeController
+        .getItemsByCategory(WardrobeCategories.footwear.id)
+        .where((item) => item.isImageAvailable)
+        .length;
+
+    final totalItems = wardrobeController.allItems
+        .where((item) => item.isImageAvailable)
+        .length;
+
+    final isReady =
+        profileCount > 0 &&
+        topsCount > 0 &&
+        bottomsCount > 0 &&
+        footwearCount > 0;
+
+    final isLoading =
+        preferencesController.isLoading || wardrobeController.isLoading;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -160,18 +154,29 @@ class _NewOutfit extends StatelessWidget {
 
                 const SizedBox(height: AppSpacing.xs),
 
-                Text(
-                  "$totalItems clothing items available\n"
-                  "$profileCount style profile${profileCount == 1 ? '' : 's'} configured",
-                  style: AppTextStyles.small,
-                ),
+                if (isLoading)
+                  const Text(
+                    "Checking your wardrobe and preferences...",
+                    style: AppTextStyles.small,
+                  )
+                else
+                  Text(
+                    "$totalItems clothing items available\n"
+                    "$profileCount style profile${profileCount == 1 ? '' : 's'} configured",
+                    style: AppTextStyles.small,
+                  ),
 
                 const SizedBox(height: AppSpacing.sm),
 
                 Text(
                   isReady
                       ? "AI-powered recommendations based on your wardrobe and preferences."
-                      : _getMissingSetupMessage(),
+                      : _getMissingSetupMessage(
+                          profileCount: profileCount,
+                          topsCount: topsCount,
+                          bottomsCount: bottomsCount,
+                          footwearCount: footwearCount,
+                        ),
                   style: AppTextStyles.small,
                 ),
 
@@ -181,7 +186,7 @@ class _NewOutfit extends StatelessWidget {
                   height: AppSpacing.xl,
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: isReady
+                    onPressed: isReady && !isLoading
                         ? () {
                             Navigator.pushNamed(context, 'outfit_request');
                           }
@@ -197,7 +202,12 @@ class _NewOutfit extends StatelessWidget {
     );
   }
 
-  String _getMissingSetupMessage() {
+  String _getMissingSetupMessage({
+    required int profileCount,
+    required int topsCount,
+    required int bottomsCount,
+    required int footwearCount,
+  }) {
     if (profileCount == 0) {
       return "Create at least one style preference profile.";
     }
@@ -219,12 +229,17 @@ class _NewOutfit extends StatelessWidget {
 }
 
 class _FavoriteOutfitsSection extends StatelessWidget {
-  final bool hasSavedLooks;
-
-  const _FavoriteOutfitsSection({required this.hasSavedLooks});
+  const _FavoriteOutfitsSection();
 
   @override
   Widget build(BuildContext context) {
+    final favoritesController = context.watch<FavoritesController>();
+
+    final sortedFavorites = [...favoritesController.favorites]
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    final previewFavorites = sortedFavorites.take(2).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -245,51 +260,63 @@ class _FavoriteOutfitsSection extends StatelessWidget {
 
         const SizedBox(height: AppSpacing.md),
 
-        if (!hasSavedLooks)
+        if (favoritesController.isLoading)
+          const Center(child: CircularProgressIndicator())
+        else if (favoritesController.errorMessage != null)
+          Text(
+            favoritesController.errorMessage!,
+            style: AppTextStyles.small.copyWith(color: AppColors.error),
+          )
+        else if (previewFavorites.isEmpty)
           const Text("No saved outfits yet.", style: AppTextStyles.small)
         else
           Row(
-            children: const [
-              Expanded(
-                child: _HardcodedOutfitPreviewCard(
-                  title: "Casual Look",
-                  icon: Icons.checkroom_outlined,
+            children: List.generate(2, (index) {
+              if (index >= previewFavorites.length) {
+                return const Expanded(child: SizedBox());
+              }
+
+              final favorite = previewFavorites[index];
+
+              return Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    right: index == 0 ? AppSpacing.lg : 0,
+                  ),
+                  child: _OutfitPreviewCard(favorite: favorite),
                 ),
-              ),
-              SizedBox(width: AppSpacing.lg),
-              Expanded(
-                child: _HardcodedOutfitPreviewCard(
-                  title: "Smart Outfit",
-                  icon: Icons.style_outlined,
-                ),
-              ),
-            ],
+              );
+            }),
           ),
       ],
     );
   }
 }
 
-class _HardcodedOutfitPreviewCard extends StatelessWidget {
-  final String title;
-  final IconData icon;
+class _OutfitPreviewCard extends StatelessWidget {
+  final FavoriteOutfitEntity favorite;
 
-  const _HardcodedOutfitPreviewCard({required this.title, required this.icon});
+  const _OutfitPreviewCard({required this.favorite});
 
   @override
   Widget build(BuildContext context) {
+    final outfitImage = favorite.outfit.outfitImage;
+
     return SizedBox(
       height: 280,
       child: Stack(
         children: [
           Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.surfaceGray,
-                borderRadius: BorderRadius.circular(AppRadius.sm),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: Center(child: Icon(icon, size: AppIcons.xl)),
+            child: ClothingImageBox(
+              imagePath: outfitImage?.photoAddress ?? "",
+              isImageAvailable: outfitImage?.isImageAvailable ?? false,
+              onTap: () {
+                Navigator.pushNamed(
+                  context,
+                  'favorite_detail',
+                  arguments: favorite,
+                );
+              },
             ),
           ),
           const Positioned(
@@ -299,23 +326,6 @@ class _HardcodedOutfitPreviewCard extends StatelessWidget {
               Icons.favorite,
               size: AppIcons.lg,
               color: AppColors.favoriteHeart,
-            ),
-          ),
-          Positioned(
-            left: AppSpacing.sm,
-            right: AppSpacing.sm,
-            bottom: AppSpacing.sm,
-            child: Container(
-              padding: const EdgeInsets.all(AppSpacing.xs),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.85),
-                borderRadius: BorderRadius.circular(AppRadius.sm),
-              ),
-              child: Text(
-                title,
-                style: AppTextStyles.small,
-                textAlign: TextAlign.center,
-              ),
             ),
           ),
         ],
@@ -333,30 +343,22 @@ class _ProfileShortcutSection extends StatelessWidget {
       _ShortcutButton(
         icon: Icons.checkroom_outlined,
         label: "My clothes",
-        onTap: () {
-          Navigator.pushNamed(context, 'wardrobe');
-        },
+        onTap: () => Navigator.pushNamed(context, 'wardrobe'),
       ),
       _ShortcutButton(
         icon: Icons.add_photo_alternate_outlined,
         label: "Upload clothes",
-        onTap: () {
-          Navigator.pushNamed(context, 'upload_clothing');
-        },
+        onTap: () => Navigator.pushNamed(context, 'upload_clothing'),
       ),
       _ShortcutButton(
         icon: Icons.thumb_up_alt_outlined,
         label: "My Style Preferences",
-        onTap: () {
-          Navigator.pushNamed(context, 'preferences');
-        },
+        onTap: () => Navigator.pushNamed(context, 'preferences'),
       ),
       _ShortcutButton(
         icon: Icons.settings_outlined,
         label: "Settings",
-        onTap: () {
-          Navigator.pushNamed(context, 'profile');
-        },
+        onTap: () => Navigator.pushNamed(context, 'profile'),
       ),
     ];
 
@@ -375,9 +377,7 @@ class _ProfileShortcutSection extends StatelessWidget {
             mainAxisSpacing: AppSpacing.lg,
             childAspectRatio: 1,
           ),
-          itemBuilder: (context, index) {
-            return shortcuts[index];
-          },
+          itemBuilder: (context, index) => shortcuts[index],
         ),
       ],
     );
