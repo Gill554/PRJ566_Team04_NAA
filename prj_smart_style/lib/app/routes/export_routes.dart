@@ -9,3 +9,7 @@ export 'package:prj_smart_style/features/preferences/presentation/screens/edit_p
 export 'package:prj_smart_style/features/wardrobe/presentation/screens/wardrobe_screen.dart';
 export 'package:prj_smart_style/features/wardrobe/presentation/screens/clothing_detail_screen.dart';
 export 'package:prj_smart_style/features/wardrobe/presentation/screens/upload_clothing_screen.dart';
+export 'package:prj_smart_style/features/outfit/presentation/screens/outfit_request_screen.dart';
+export 'package:prj_smart_style/features/outfit/presentation/screens/outfit_result_screen.dart';
+export 'package:prj_smart_style/features/favorites/presentation/screens/favorites_screen.dart';
+export 'package:prj_smart_style/features/favorites/presentation/screens/favorite_detail_screen.dart';

@@ -39,22 +39,40 @@ import '../../features/wardrobe/domain/usecases/get_clothing_items_by_category_u
 import '../../features/wardrobe/domain/usecases/get_wardrobe_categories_usecase.dart';
 import '../../features/wardrobe/presentation/controllers/wardrobe_controller.dart';
 
+/// OUTFIT
+import '../../features/outfit/data/repositories/gemini_outfit_repository.dart';
+import '../../features/outfit/domain/usecases/prepare_outfit_input_usecase.dart';
+import '../../features/outfit/domain/usecases/generate_outfits_with_collage_usecase.dart';
+import '../../features/outfit/presentation/controllers/outfit_controller.dart';
+
+/// FAVORITES
+import '../../features/favorites/data/datasources/favorites_local_datasource.dart';
+import '../../features/favorites/data/repositories/sqlite_favorites_repository.dart';
+import '../../features/favorites/domain/usecases/delete_favorite_usecase.dart';
+import '../../features/favorites/domain/usecases/get_favorites_usecase.dart';
+import '../../features/favorites/domain/usecases/save_favorite_usecase.dart';
+import '../../features/favorites/presentation/controllers/favorites_controller.dart';
+
 /// CAMERA
 import 'package:image_picker/image_picker.dart';
-import '../../shared/camera/data/repositories/image_picker_repository.dart';
-import '../../shared/camera/domain/usecases/pick_image_from_gallery_usecase.dart';
-import '../../shared/camera/domain/usecases/take_photo_usecase.dart';
+import 'package:prj_smart_style/shared/camera/data/repositories/image_picker_repository.dart';
+import 'package:prj_smart_style/shared/camera/domain/usecases/pick_image_from_gallery_usecase.dart';
+import 'package:prj_smart_style/shared/camera/domain/usecases/take_photo_usecase.dart';
+
+/// IMAGE PROCESSING
+import '../../shared/image_processing/data/repositories/local_image_collage_repository.dart';
+import '../../shared/image_processing/domain/usecases/create_outfit_collage_usecase.dart';
 
 class AppProviders {
   /// DATABASE
   static final AppDatabase appDatabase = AppDatabase.instance;
 
+  /// GEMINI
+  static final geminiService = GeminiService();
+
   static final DatabaseService databaseService = DatabaseService(
     appDatabase: appDatabase,
   );
-
-  /// GEMINI
-  static final geminiService = GeminiService();
 
   /// AUTH
   static final authRepository = FirebaseAuthRepository(
@@ -83,10 +101,27 @@ class AppProviders {
     geminiService: geminiService,
   );
 
+  /// OUTFIT
+  static final outfitRepository = GeminiOutfitRepository(
+    geminiService: geminiService,
+  );
+
+  /// FAVORITES
+  static final favoritesLocalDatasource = FavoritesLocalDatasource(
+    databaseService: databaseService,
+  );
+
+  static final favoritesRepository = SQLiteFavoritesRepository(
+    localDatasource: favoritesLocalDatasource,
+  );
+
   /// CAMERA
   static final imagePickerRepository = ImagePickerRepositoryImpl(
     imagePicker: ImagePicker(),
   );
+
+  /// IMAGE PROCESSING
+  static final imageCollageRepository = LocalImageCollageRepository();
 
   static List<SingleChildWidget> providers = [
     /// AUTH
@@ -146,6 +181,40 @@ class AppProviders {
             analysisRepository: clothingAnalysisRepository,
             wardrobeRepository: wardrobeRepository,
           ),
+        );
+      },
+    ),
+
+    /// OUTFIT INPUT
+    Provider(
+      create: (_) {
+        return PrepareOutfitInputUseCase(wardrobeRepository);
+      },
+    ),
+
+    /// OUTFIT
+    ChangeNotifierProvider(
+      create: (_) {
+        final createOutfitCollageUseCase = CreateOutfitCollageUseCase(
+          imageCollageRepository,
+        );
+
+        return OutfitController(
+          generateOutfitsWithCollageUseCase: GenerateOutfitsWithCollageUseCase(
+            outfitRepository: outfitRepository,
+            createOutfitCollageUseCase: createOutfitCollageUseCase,
+          ),
+        );
+      },
+    ),
+
+    /// FAVORITES
+    ChangeNotifierProvider(
+      create: (_) {
+        return FavoritesController(
+          getFavoritesUseCase: GetFavoritesUseCase(favoritesRepository),
+          saveFavoriteUseCase: SaveFavoriteUseCase(favoritesRepository),
+          deleteFavoriteUseCase: DeleteFavoriteUseCase(favoritesRepository),
         );
       },
     ),
