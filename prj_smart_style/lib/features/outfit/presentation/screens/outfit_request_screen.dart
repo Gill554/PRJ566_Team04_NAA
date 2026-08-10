@@ -256,9 +256,21 @@ class _ProfileDropdownField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    UserProfilePreferencesEntity? currentValue;
+
+    if (value != null) {
+      for (final item in items) {
+        if (item.id == value!.id) {
+          currentValue = item;
+          break;
+        }
+      }
+    }
+
     return DropdownButtonFormField<UserProfilePreferencesEntity>(
-      initialValue: value,
+      initialValue: currentValue,
       isExpanded: true,
+
       selectedItemBuilder: (context) {
         return items.map((item) {
           return Align(
@@ -271,6 +283,7 @@ class _ProfileDropdownField extends StatelessWidget {
           );
         }).toList();
       },
+
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white,
@@ -283,8 +296,11 @@ class _ProfileDropdownField extends StatelessWidget {
           borderSide: BorderSide.none,
         ),
       ),
+
       hint: Text(hint, style: AppTextStyles.body),
+
       icon: const Icon(Icons.keyboard_arrow_down),
+
       items: items.map((item) {
         return DropdownMenuItem<UserProfilePreferencesEntity>(
           value: item,
@@ -302,6 +318,7 @@ class _ProfileDropdownField extends StatelessWidget {
           ),
         );
       }).toList(),
+
       onChanged: onChanged,
     );
   }
