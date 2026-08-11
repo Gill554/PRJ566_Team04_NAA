@@ -10,6 +10,7 @@ import 'package:prj_smart_style/shared/widgets/app_back_app_bar.dart';
 import 'package:prj_smart_style/shared/widgets/app_confirmation_dialog.dart';
 import 'package:prj_smart_style/shared/widgets/primary_button.dart';
 import 'package:prj_smart_style/shared/widgets/secondary_button.dart';
+import 'package:prj_smart_style/shared/widgets/user_initial_avatar.dart';
 import 'package:provider/provider.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -175,18 +176,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
 class _EditProfileHeader extends StatelessWidget {
   final String fullName;
+
   const _EditProfileHeader({required this.fullName});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const CircleAvatar(
-          radius: AppRadius.xxl,
-          child: Icon(Icons.person, size: AppIcons.xl),
-        ),
+        UserInitialAvatar(fullName: fullName, radius: AppRadius.xxl),
+
         const SizedBox(height: AppSpacing.md),
-        Text(fullName, style: AppTextStyles.title),
+
+        Text(
+          fullName,
+          style: AppTextStyles.avatarName,
+          textAlign: TextAlign.center,
+        ),
       ],
     );
   }

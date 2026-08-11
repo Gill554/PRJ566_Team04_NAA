@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
 class AppTextStyles {
+  static const TextStyle avatarName = TextStyle(
+    fontSize: 22,
+    fontWeight: FontWeight.w700,
+    color: AppColors.primaryText,
+  );
+
   static const TextStyle title = TextStyle(
     fontSize: 20,
     fontWeight: FontWeight.w700,

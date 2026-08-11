@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:prj_smart_style/shared/widgets/user_initial_avatar.dart';
 import 'package:prj_smart_style/app/theme/app_colors.dart';
 import 'package:prj_smart_style/app/theme/app_icons.dart';
 import 'package:prj_smart_style/app/theme/app_radius.dart';
@@ -74,7 +75,10 @@ class _UserProfile extends StatelessWidget {
       },
       child: Row(
         children: [
-          const CircleAvatar(radius: AppRadius.lg, child: Icon(Icons.person)),
+          UserInitialAvatar(
+            fullName: authController.currentUser?.fullName ?? "Unknown User",
+            radius: AppRadius.lg,
+          ),
           const SizedBox(width: AppSpacing.sm),
           Text(
             "Hello, ${authController.currentUser?.fullName ?? "Unknown User"}!",

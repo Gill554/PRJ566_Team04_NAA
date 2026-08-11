@@ -9,6 +9,7 @@ import 'package:prj_smart_style/app/theme/app_text_styles.dart';
 import 'package:prj_smart_style/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:prj_smart_style/shared/widgets/app_back_app_bar.dart';
 import 'package:prj_smart_style/shared/widgets/primary_button.dart';
+import 'package:prj_smart_style/shared/widgets/user_initial_avatar.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -105,18 +106,29 @@ class _ProfileHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const CircleAvatar(
-          radius: AppRadius.xl,
-          child: Icon(Icons.person, size: AppIcons.xl),
-        ),
+        UserInitialAvatar(fullName: fullName, radius: AppRadius.xl),
+
         const SizedBox(width: AppSpacing.lg),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(fullName, style: AppTextStyles.title),
-            const SizedBox(height: AppSpacing.xs),
-            Text(email, style: AppTextStyles.body),
-          ],
+
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                fullName,
+                style: AppTextStyles.title,
+                overflow: TextOverflow.ellipsis,
+              ),
+
+              const SizedBox(height: AppSpacing.xs),
+
+              Text(
+                email,
+                style: AppTextStyles.body,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
       ],
     );
