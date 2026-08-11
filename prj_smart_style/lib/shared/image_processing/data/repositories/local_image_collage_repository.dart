@@ -35,28 +35,30 @@ class LocalImageCollageRepository implements ImageCollageRepository {
     }
 
     const collageWidth = 800;
-    const collageHeight = 1200;
+    const collageHeight = 1600;
+
+    const outerPadding = 20;
+    const spacing = 20;
 
     final collage = img.Image(width: collageWidth, height: collageHeight);
 
-    img.fill(collage, color: img.ColorRgb8(245, 245, 245));
+    img.fill(collage, color: img.ColorRgb8(250, 250, 250));
 
-    final itemHeight = collageHeight ~/ validImages.length;
+    final availableHeight =
+        collageHeight - outerPadding * 2 - spacing * (validImages.length - 1);
+
+    final itemHeight = availableHeight ~/ validImages.length;
 
     for (var i = 0; i < validImages.length; i++) {
-      final y = i * itemHeight;
-
-      final height = i == validImages.length - 1
-          ? collageHeight - y
-          : itemHeight;
+      final y = outerPadding + i * (itemHeight + spacing);
 
       _drawImage(
         collage: collage,
         source: validImages[i],
-        x: 0,
+        x: outerPadding,
         y: y,
-        width: collageWidth,
-        height: height,
+        width: collageWidth - outerPadding * 2,
+        height: itemHeight,
       );
     }
 
@@ -111,19 +113,53 @@ class LocalImageCollageRepository implements ImageCollageRepository {
     required int width,
     required int height,
   }) {
-    final resized = img.copyResizeCropSquare(
+    // ---------- Crop superior e inferior ----------
+    final cropTop = (source.height * 0.20).toInt();
+    final cropBottom = (source.height * 0.10).toInt();
+
+    final croppedHeight = source.height - cropTop - cropBottom;
+
+    final croppedSource = img.copyCrop(
       source,
-      size: width > height ? width : height,
+      x: 0,
+      y: cropTop,
+      width: source.width,
+      height: croppedHeight,
     );
 
-    final cropped = img.copyCrop(
-      resized,
-      x: (resized.width - width) ~/ 2,
-      y: (resized.height - height) ~/ 2,
+    // ---------- Resize manteniendo aspecto ----------
+    final resized = img.copyResize(
+      croppedSource,
       width: width,
-      height: height,
+      interpolation: img.Interpolation.average,
     );
 
-    img.compositeImage(collage, cropped, dstX: x, dstY: y);
+    // ---------- Si sobra altura, recortamos verticalmente ----------
+    img.Image finalImage;
+
+    if (resized.height > height) {
+      final offsetY = (resized.height - height) ~/ 2;
+
+      finalImage = img.copyCrop(
+        resized,
+        x: 0,
+        y: offsetY,
+        width: width,
+        height: height,
+      );
+    } else {
+      finalImage = img.Image(width: width, height: height);
+
+      img.fill(finalImage, color: img.ColorRgb8(250, 250, 250));
+
+      img.compositeImage(
+        finalImage,
+        resized,
+        dstX: 0,
+        dstY: (height - resized.height) ~/ 2,
+      );
+    }
+
+    img.compositeImage(collage, finalImage, dstX: x, dstY: y);
   }
 }
