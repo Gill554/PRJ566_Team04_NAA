@@ -130,37 +130,56 @@ class _PreferenceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 0,
+      elevation: 3,
+      shadowColor: Colors.black26,
       margin: EdgeInsets.zero,
       color: AppColors.surfaceGray,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm,
-        ),
-        leading: const Icon(
-          Icons.edit,
-          size: AppIcons.lg,
-          color: AppColors.edit,
-        ),
-        title: Text(profile.profileName, style: AppTextStyles.subtitle),
-        subtitle: Text(
-          "Style: ${profile.preferencesStyle.title}\n"
-          "Color Palette: ${profile.preferencesColor.title}",
-          style: AppTextStyles.small,
-        ),
-        trailing: IconButton(
-          icon: const Icon(
-            Icons.delete_outline,
-            size: AppIcons.lg,
-            color: AppColors.delete,
-          ),
-          onPressed: onDelete,
-        ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(profile.profileName, style: AppTextStyles.subtitle),
+
+                    const SizedBox(height: AppSpacing.xs),
+
+                    Text(
+                      "Style: ${profile.preferencesStyle.title}",
+                      style: AppTextStyles.small,
+                    ),
+
+                    Text(
+                      "Color Palette: ${profile.preferencesColor.title}",
+                      style: AppTextStyles.small,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+
+              IconButton(
+                onPressed: onDelete,
+                icon: const Icon(
+                  Icons.delete_outline,
+                  size: AppIcons.xl,
+                  color: AppColors.delete,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
